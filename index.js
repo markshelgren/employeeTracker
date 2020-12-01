@@ -4,13 +4,13 @@ const inquirer = require("inquirer");
 var connection = mysql.createConnection({
 	host: "localhost",
 
-	// Your port; if not 3306
+	// The port; if not 3306
 	port: 3306,
 
-	// Your username
+	// Username
 	user: "root",
 
-	// Your password
+	// Password
 	password: "Lolo2384$$",
 	database: "employee_db",
 });
@@ -28,11 +28,14 @@ function askQuestions() {
 			type: "list",
 			choices: [
 				"view all employees",
+				"view employees by manager",
 				"view all departments",
+				"view all roles",
 				"add employee",
 				"add department",
 				"add role",
 				"update employee role",
+				"update employee manager",
 				"QUIT",
 			],
 			name: "choice",
@@ -44,8 +47,17 @@ function askQuestions() {
 					viewEmployees();
 					break;
 
+				case "view employees by manager":
+					console.log("Anser to manager id number" + answers.choice);
+					viewEmployeesByManager();
+					break;
+
 				case "view all departments":
 					viewDepartments();
+					break;
+
+				case "view all roles":
+					viewRoles();
 					break;
 
 				case "add employee":
@@ -64,6 +76,10 @@ function askQuestions() {
 					updateEmployeeRole();
 					break;
 
+				case "update employee manager":
+					updateEmployeeManager();
+					break;
+
 				default:
 					connection.end();
 					break;
@@ -80,6 +96,13 @@ function viewEmployees() {
 
 function viewDepartments() {
 	connection.query("SELECT * FROM department", function (err, data) {
+		console.table(data);
+		askQuestions();
+	});
+}
+
+function viewRoles() {
+	connection.query("SELECT * FROM role", function (err, data) {
 		console.table(data);
 		askQuestions();
 	});
@@ -199,5 +222,53 @@ function updateEmployeeRole() {
 				}
 			);
 			askQuestions();
+		});
+}
+
+function updateEmployeeManager() {
+	inquirer
+		.prompt([
+			{
+				message:
+					"which employee would you like to update? (use first name only for now)",
+				type: "input",
+				name: "name",
+			},
+			{
+				message: "enter the new manager ID:",
+				type: "number",
+				name: "manager_id",
+			},
+		])
+		.then(function (response) {
+			connection.query(
+				"UPDATE employee SET manager_id = ? WHERE first_name = ?",
+				[response.manager_id, response.name],
+				function (err, data) {
+					console.table(data);
+				}
+			);
+			askQuestions();
+		});
+}
+
+function viewEmployeesByManager() {
+	inquirer
+		.prompt([
+			{
+				message: "Enter the manager ID to list Employees For:",
+				type: "number",
+				name: "manager_id",
+			},
+		])
+		.then(function (response) {
+			connection.query(
+				"SELECT * FROM employee WHERE manager_id = ?",
+				[response.manager_id],
+				function (err, data) {
+					console.table(data);
+					askQuestions();
+				}
+			);
 		});
 }
