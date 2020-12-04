@@ -5,7 +5,7 @@ var connection = mysql.createConnection({
 	host: "localhost",
 
 	// The port; if not 3306
-	port: 3306,
+	port: process.env.PORT || 3306,
 
 	// Username
 	user: "root",
@@ -187,8 +187,9 @@ function addRole() {
 			},
 		])
 		.then(function (response) {
+			console.log("Called the connection function " + response);
 			connection.query(
-				"INSERT INTO roles (title, salary, department_id) values (?, ?, ?)",
+				"INSERT INTO role (title, salary, department_id) values (?, ?, ?)",
 				[response.title, response.salary, response.department_id],
 				function (err, data) {
 					console.table(data);
